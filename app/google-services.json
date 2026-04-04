@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "392201262023",
+    "firebase_url": "https://emergencyphonerecovery-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "emergencyphonerecovery",
+    "storage_bucket": "emergencyphonerecovery.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:392201262023:android:af45e313574c130442ffe2",
+        "android_client_info": {
+          "package_name": "com.prabhas.emergencyphonerecovery"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGaRc8gotaXmozWiNRVIH3WBAPZtPw-8E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

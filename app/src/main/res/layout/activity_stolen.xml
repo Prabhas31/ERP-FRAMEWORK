@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/stolenRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#D32F2F"
+    android:keepScreenOn="true">
+
+    <!-- Center container -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🚨 PHONE IN STOLEN MODE"
+            android:textColor="#FFFFFF"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:paddingBottom="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Live location tracking is active"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Only the owner can recover this phone"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:alpha="0.9"
+            android:paddingBottom="32dp" />
+
+        <!-- 🔑 RECOVERY BUTTON -->
+        <Button
+            android:id="@+id/btnRecover"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Recover Ownership"
+            android:textAllCaps="false"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp" />
+
+    </LinearLayout>
+
+</FrameLayout>

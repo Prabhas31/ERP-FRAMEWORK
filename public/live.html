@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Emergency Phone Recovery – Live Location</title>
+
+    <!-- Leaflet (OpenStreetMap) -->
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        body {
+          margin: 0;
+          font-family: Arial, sans-serif;
+          background: #111;
+          color: #fff;
+        }
+        #map {
+          height: 100vh;
+          width: 100%;
+        }
+        #status {
+          position: fixed;
+          top: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(0,0,0,0.7);
+          padding: 8px 14px;
+          border-radius: 6px;
+          z-index: 999;
+          font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="status">Connecting…</div>
+<div id="map"></div>
+
+<script>
+    /***********************
+     * 1. READ URL PARAMS
+     ***********************/
+    const params = new URLSearchParams(window.location.search);
+    const ownerId = params.get("owner");
+    const sessionId = params.get("session");
+
+    if (!ownerId || !sessionId) {
+      document.body.innerHTML = "<h2>Invalid tracking link</h2>";
+      throw new Error("Missing owner or session");
+    }
+
+    /***********************
+     * 2. FIREBASE CONFIG
+     ***********************/
+    const firebaseConfig = {
+      databaseURL:
+        "https://emergencyphonerecovery-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    /***********************
+     * 3. MAP SETUP
+     ***********************/
+    const map = L.map("map").setView([17.385, 78.486], 15);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap"
+    }).addTo(map);
+
+    let marker = null;
+
+    /***********************
+     * 4. VERIFY SESSION
+     ***********************/
+    const sessionRef = db.ref(
+      `/users/${ownerId}/share_sessions/${sessionId}`
+    );
+
+    const statusBox = document.getElementById("status");
+
+    sessionRef.on("value", (snap) => {
+      if (!snap.exists() || snap.val().active !== true) {
+        statusBox.innerText = "Tracking session expired";
+        sessionRef.off();
+        locationRef.off();
+      }
+    });
+
+    /***********************
+     * 5. LIVE LOCATION LISTENER
+     ***********************/
+    const locationRef = db.ref(
+      `/users/${ownerId}/live_location`
+    );
+
+    locationRef.on("value", (snap) => {
+      if (!snap.exists()) return;
+
+      const loc = snap.val();
+      const lat = loc.lat;
+      const lng = loc.lng;
+
+      if (!marker) {
+        marker = L.marker([lat, lng]).addTo(map);
+      } else {
+        marker.setLatLng([lat, lng]);
+      }
+
+      map.setView([lat, lng], 16);
+
+      statusBox.innerText =
+        "Live • Accuracy: " + Math.round(loc.accuracy) + "m";
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- App -->
+    <string name="app_name">Emergency Phone Recovery</string>
+
+    <!-- Dashboard -->
+    <string name="status_normal_mode">Normal Mode</string>
+    <string name="dashboard_title">Security Dashboard</string>
+
+    <string name="btn_manage_trusted_emails">Manage Trusted Emails</string>
+    <string name="btn_manage_recovery_password">Manage Recovery Password</string>
+    <string name="btn_simulate_power_off">Simulate Power Off / Shutdown</string>
+    <string name="btn_manage_app_lock">Manage App Lock Password</string>
+    <string name="btn_view_physical_key">View Physical Recovery Key</string>
+
+    <!-- Physical Recovery Key -->
+    <string name="physical_key_title">Physical Recovery Key</string>
+    <string name="physical_key_warning">
+        Keep this key safe. Anyone with this key can recover your device.
+    </string>
+    <string name="physical_key_placeholder">XXXX-XXXX-XXXX-XXXX</string>
+
+    <!-- VERIFY RECOVERY PASSWORD (MATCHES activity_verify_recovery_password.xml) -->
+    <string name="title_verify_recovery_password">Verify Recovery Password</string>
+    <string name="hint_verify_recovery_password">Enter your recovery password</string>
+    <string name="btn_verify_recovery_password">Verify</string>
+
+    <!-- RESET RECOVERY PASSWORD (MATCHES activity_reset_recovery_password.xml) -->
+    <string name="hint_old_recovery_password">Old Recovery Password</string>
+    <string name="hint_new_recovery_password">New Recovery Password</string>
+    <string name="hint_confirm_recovery_password">Confirm Recovery Password</string>
+    <string name="reset_password_button">Reset Password</string>
+
+    <!-- Dialogs / Inputs -->
+    <string name="hint_owner_name">Enter owner name</string>
+    <string name="default_owner_name">Owner</string>
+
+    <string name="dialog_owner_title">Device Owner</string>
+    <string name="dialog_owner_message">
+        Please enter the owner name for this device.
+    </string>
+    <string name="action_save">Save</string>
+
+
+    <string name="hint_recovery_password">Enter recovery password</string>
+
+    <string name="action_verify">Verify</string>
+
+    <string name="action_forgot_recovery_password">Forgot recovery password?</string>
+
+
+</resources>
