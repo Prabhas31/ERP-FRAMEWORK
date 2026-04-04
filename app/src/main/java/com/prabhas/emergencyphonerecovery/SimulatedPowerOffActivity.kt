@@ -86,3 +86,4 @@ class SimulatedPowerOffActivity : AppCompatActivity() {
         setContentView(R.layout.activity_fake_powered_off)
     }
 }
+// git test

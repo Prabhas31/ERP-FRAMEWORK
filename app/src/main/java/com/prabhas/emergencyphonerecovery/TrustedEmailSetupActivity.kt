@@ -83,3 +83,4 @@ class TrustedEmailSetupActivity : AppCompatActivity() {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 }
+// git test

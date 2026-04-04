@@ -68,3 +68,4 @@ class StartupGateActivity : AppCompatActivity() {
         }
     }
 }
+// git test
