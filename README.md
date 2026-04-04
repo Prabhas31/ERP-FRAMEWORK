@@ -1,42 +1,60 @@
 # 📱 Emergency Phone Recovery Framework (ERP Framework)
 
 ## 🔥 Project Overview
-The Emergency Phone Recovery Framework is an Android-based security system designed to help users recover lost or stolen mobile devices. It provides advanced recovery mechanisms, secure authentication, and real-time tracking features.
+The Emergency Phone Recovery Framework (ERP Framework) is an Android-based mobile security system designed to help users recover lost or stolen smartphones. It provides a secure, database-driven approach to device tracking, authentication, and recovery.
+
+The system ensures that even after reinstallation or unauthorized access, the device can be tracked and controlled securely.
 
 ---
 
 ## 🎯 Problem Statement
-In today's world, mobile theft and loss are common issues. Existing systems lack a proper database-driven and secure framework to manage device recovery, authentication, and tracking efficiently.
+Mobile theft and loss are increasing rapidly, and existing solutions often lack a proper database-driven recovery system. Most applications fail to provide:
 
-This project solves that problem by creating a structured and secure recovery system.
+- Secure recovery mechanisms  
+- Persistent tracking after reinstall  
+- Strong authentication layers  
+- Structured device ownership verification  
+
+This project solves these issues by implementing a secure and structured recovery framework using modern mobile technologies.
 
 ---
 
 ## 🚀 Key Features
 
-- 🔐 App Lock Security System  
-- 📍 Live Location Tracking  
-- 🚨 Stolen Mode Activation  
-- 🔑 Recovery Password & Physical Key System  
-- 📧 Trusted Email Verification  
-- 🔄 Reinstallation Recovery Verification  
-- ⚡ Background Security Services  
-- 🛡️ Secure Data Handling  
+- 🔐 **App Lock Security System**  
+- 📍 **Live Location Tracking**  
+- 🚨 **Stolen Mode Activation**  
+- 🔑 **Recovery Password & Physical Key System**  
+- 📧 **Trusted Email Verification**  
+- 🔄 **Reinstallation Recovery Verification**  
+- ⚡ **Background Security Services**  
+- 🛡️ **Secure Data Handling with Firebase**
 
 ---
 
 ## 🧠 How It Works
 
-1. User sets up recovery options (password, email, keys)
-2. System monitors device activity in background
-3. If theft is detected:
-   - Stolen mode activates
-   - Location tracking starts
-   - Security restrictions applied
-4. User can recover device using:
-   - Recovery password
-   - Trusted email
-   - Physical recovery key
+1. **User Setup**
+   - User registers recovery email and password  
+   - Security keys are generated  
+
+2. **Background Monitoring**
+   - App runs background services  
+   - Tracks device behavior and status  
+
+3. **Theft Detection**
+   - Stolen mode can be activated manually or automatically  
+   - Device enters restricted secure mode  
+
+4. **Recovery Process**
+   - User authenticates using:
+     - Recovery password  
+     - Trusted email  
+     - Physical recovery key  
+
+5. **Tracking & Control**
+   - Live location is fetched  
+   - Device access is restricted  
 
 ---
 
@@ -46,7 +64,7 @@ This project solves that problem by creating a structured and secure recovery sy
 - **Platform:** Android Studio  
 - **Backend:** Firebase  
 - **Database:** Firebase Realtime Database / Firestore  
-- **Authentication:** Custom + Email-based  
+- **Authentication:** Custom Authentication + Email Verification  
 
 ---
 
