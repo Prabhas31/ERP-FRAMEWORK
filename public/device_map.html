@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Device Map</title>
+
+    <!-- NO CACHE -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+
+    <!-- Google Maps -->
+    <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDH1HKKs4bCQicWRBPw271nfB5HXROWtwM&callback=initMap">
+    </script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        body { margin: 0; font-family: Arial; }
+        #map { height: 100vh; width: 100%; }
+
+        /* 🔥 PREMIUM EXPIRED SCREEN */
+        #expired {
+            display:none;
+            position:fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height:100vh;
+            background:linear-gradient(180deg, #000000, #0a0a0a);
+            color:white;
+            justify-content:center;
+            align-items:center;
+            z-index:9999;
+            opacity:0;
+            transition:opacity 0.4s ease;
+        }
+
+        #expired.show {
+            display:flex;
+            opacity:1;
+        }
+
+        .expired-box {
+            text-align:center;
+            animation:fadeUp 0.6s ease;
+        }
+
+        .lock {
+            font-size:50px;
+            margin-bottom:15px;
+            text-shadow:0 0 10px rgba(255,255,255,0.6),
+                        0 0 20px rgba(255,255,255,0.4);
+            animation:pulse 1.5s infinite;
+        }
+
+        .text {
+            font-size:22px;
+            font-weight:500;
+            color:#e0e0e0;
+        }
+
+        @keyframes fadeUp {
+            from { transform:translateY(20px); opacity:0; }
+            to { transform:translateY(0); opacity:1; }
+        }
+
+        @keyframes pulse {
+            0% { transform:scale(1); opacity:0.8; }
+            50% { transform:scale(1.1); opacity:1; }
+            100% { transform:scale(1); opacity:0.8; }
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<!-- 🔥 PREMIUM UI -->
+<div id="expired">
+    <div class="expired-box">
+        <div class="lock">🔒</div>
+        <div class="text">Device recovered / Link expired</div>
+    </div>
+</div>
+
+<script>
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDnlfRXDtcFg6ppr5WrMuRT5JkUmi6wUXo",
+      authDomain: "emergencyphonerecovery.firebaseapp.com",
+      databaseURL: "https://emergencyphonerecovery-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "emergencyphonerecovery",
+      storageBucket: "emergencyphonerecovery.firebasestorage.app",
+      messagingSenderId: "392201262023",
+      appId: "1:392201262023:web:614849f3f0363a2b42ffe2"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+
+    const db = firebase.database();
+
+    const userId = new URLSearchParams(window.location.search).get("uid");
+
+    let map, marker, infoWindow;
+    let locationRef = null;
+
+    // ✅ EXPIRE FUNCTION (PREMIUM)
+    function expireNow() {
+        document.getElementById("map").style.display = "none";
+
+        const expired = document.getElementById("expired");
+        expired.classList.add("show");
+
+        if (locationRef) locationRef.off();
+    }
+
+    // ✅ SESSION CHECK
+    function monitorSession() {
+
+        db.ref(`users/${userId}/share_sessions`)
+        .on("value", snap => {
+
+            if (!snap.exists()) {
+                expireNow();
+                return;
+            }
+
+            const sessions = snap.val();
+            const hasActive = Object.values(sessions).some(s => s && s.active === true);
+
+            if (!hasActive) {
+                expireNow();
+            }
+        });
+    }
+
+    function initMap() {
+
+        map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 16,
+            center: { lat: 20.5937, lng: 78.9629 }
+        });
+
+        marker = new google.maps.Marker({
+            map: map,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 7,
+                fillColor: "#ff3b30",
+                fillOpacity: 1,
+                strokeWeight: 2,
+                strokeColor: "#ffffff"
+            }
+        });
+
+        infoWindow = new google.maps.InfoWindow();
+
+        monitorSession();
+
+        // ✅ LIVE LOCATION
+        locationRef = db.ref(`users/${userId}/live_location`);
+
+        locationRef.on("value", snap => {
+
+            const d = snap.val();
+            if (!d) return;
+
+            const lat = d.lat ?? d.latitude;
+            const lng = d.lng ?? d.longitude;
+
+            if (!lat || !lng) return;
+
+            const pos = { lat, lng };
+
+            marker.setPosition(pos);
+            map.setCenter(pos);
+
+            infoWindow.open(map, marker);
+        });
+
+        // ✅ DEVICE INFO
+        db.ref(`users/${userId}/device_info`)
+        .on("value", snap => {
+
+            if (!snap.exists()) return;
+
+            const d = snap.val();
+
+            const html = `
+                <div style="font-size:14px">
+                    <b>${d.display_name || "Device"}</b><br>
+                    Owner: ${d.owner_name || "-"}<br>
+                    Model: ${d.model || "-"}
+                </div>
+            `;
+
+            infoWindow.setContent(html);
+        });
+    }
+
+</script>
+
+</body>
+</html>

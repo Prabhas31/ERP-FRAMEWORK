@@ -7,10 +7,13 @@ import com.google.firebase.database.FirebaseDatabase
 
 class StartupGateActivity : AppCompatActivity() {
 
-    private val userId = "owner_001"
+    private lateinit var userId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        userId = SecurePrefs.initUserId(this)
+
         setContentView(R.layout.activity_startup_gate)
         route()
     }
@@ -31,7 +34,6 @@ class StartupGateActivity : AppCompatActivity() {
                     .child("trusted_emails_set")
                     .getValue(Boolean::class.java) ?: false
 
-            // 🔴 REINSTALL CASE
             if (recoveryExists &&
                 !getSharedPreferences("install_state", MODE_PRIVATE)
                     .getBoolean("trusted_install", false)
@@ -43,7 +45,6 @@ class StartupGateActivity : AppCompatActivity() {
                 return@addOnSuccessListener
             }
 
-            // 🔐 FIRST SETUP FLOW
             if (!SecurePrefs.isAppLockSet(this)) {
                 startActivity(Intent(this, AppLockSetupActivity::class.java))
                 finish()
@@ -56,14 +57,12 @@ class StartupGateActivity : AppCompatActivity() {
                 return@addOnSuccessListener
             }
 
-            // 🟡 CHECK TRUSTED EMAILS
             if (!trustedEmailsSet) {
                 startActivity(Intent(this, TrustedEmailSetupActivity::class.java))
                 finish()
                 return@addOnSuccessListener
             }
 
-            // ✅ NORMAL FLOW
             startActivity(Intent(this, MainActivity::class.java))
             finish()
         }

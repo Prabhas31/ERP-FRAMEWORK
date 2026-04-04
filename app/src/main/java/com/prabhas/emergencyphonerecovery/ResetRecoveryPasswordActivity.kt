@@ -8,14 +8,17 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.database.FirebaseDatabase
-import java.security.MessageDigest
 
 class ResetRecoveryPasswordActivity : AppCompatActivity() {
 
-    private val userId = "owner_001"
+    private lateinit var userId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ✅ FIX: use correct userId
+        userId = SecurePrefs.getUserId(this)
+
         setContentView(R.layout.activity_reset_recovery_password)
 
         val etNew = findViewById<EditText>(R.id.etNewPassword)
@@ -47,9 +50,18 @@ class ResetRecoveryPasswordActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // ✅ Directly update recovery password
-            recoveryRef.child("password_hash")
-                .setValue(sha256(newPw))
+            val hash = HashUtils.sha256(newPw)
+
+            println("🔥 UPDATE USER ID: $userId")
+            println("🔥 NEW HASH: $hash")
+
+            // ✅ FIX: use updateChildren (safe update)
+            recoveryRef.updateChildren(
+                mapOf(
+                    "password_hash" to hash,
+                    "password_set" to true
+                )
+            )
                 .addOnSuccessListener {
 
                     toast("Recovery password updated successfully")
@@ -63,8 +75,9 @@ class ResetRecoveryPasswordActivity : AppCompatActivity() {
                     )
                     finish()
                 }
-                .addOnFailureListener {
-                    toast("Failed to update password")
+                .addOnFailureListener { e ->
+                    toast("Failed: ${e.message}")
+                    e.printStackTrace()
                 }
         }
 
@@ -80,12 +93,6 @@ class ResetRecoveryPasswordActivity : AppCompatActivity() {
                 }
             }
         )
-    }
-
-    private fun sha256(input: String): String {
-        val md = MessageDigest.getInstance("SHA-256")
-        return md.digest(input.toByteArray())
-            .joinToString("") { "%02x".format(it) }
     }
 
     private fun toast(msg: String) {

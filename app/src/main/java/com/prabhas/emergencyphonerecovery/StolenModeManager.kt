@@ -63,6 +63,6 @@ object StolenModeManager {
         )
 
         // 🧹 Cleanup sessions
-        ShareSessionManager.onRecoveryCompleted()
+        ShareSessionManager.onRecoveryCompleted(context)
     }
 }

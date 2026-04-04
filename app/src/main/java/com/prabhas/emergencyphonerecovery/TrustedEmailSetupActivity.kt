@@ -10,10 +10,14 @@ import com.google.firebase.database.FirebaseDatabase
 
 class TrustedEmailSetupActivity : AppCompatActivity() {
 
-    private val userId = "owner_001"
+    private lateinit var userId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ✅ FIX
+        userId = SecurePrefs.getUserId(this)
+
         setContentView(R.layout.activity_trusted_email_setup)
 
         val etEmail1 = findViewById<EditText>(R.id.etEmail1)
@@ -41,6 +45,7 @@ class TrustedEmailSetupActivity : AppCompatActivity() {
         email2: String,
         email3: String
     ) {
+
         val trustedRef = FirebaseDatabase.getInstance()
             .getReference("users")
             .child(userId)
@@ -59,7 +64,6 @@ class TrustedEmailSetupActivity : AppCompatActivity() {
 
                 toast("Trusted emails saved")
 
-                // 🔥 go to Dashboard cleanly
                 startActivity(
                     Intent(this, MainActivity::class.java)
                         .addFlags(

@@ -24,13 +24,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var physicalKeyButton: Button
     private lateinit var simulatePowerOffButton: Button
 
-    private val userId = "owner_001"
+    private lateinit var userId: String
     private val PERMISSION_REQUEST_CODE = 101
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 🔴 HARD STOLEN MODE GUARD
+        // ✅ FIX
+        userId = SecurePrefs.getUserId(this)
+
         if (StolenModeManager.isStolen(this)) {
             startActivity(
                 Intent(this, StolenActivity::class.java)
@@ -64,9 +66,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         manageRecoveryPasswordButton.setOnClickListener {
-            startActivity(
-                Intent(this, RecoveryPasswordOptionsActivity::class.java)
-            )
+            startActivity(Intent(this, RecoveryPasswordOptionsActivity::class.java))
         }
 
         physicalKeyButton.setOnClickListener {
@@ -84,7 +84,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, VerifyAppLockActivity::class.java))
         }
 
-        // 🔙 Back exits app
         onBackPressedDispatcher.addCallback(
             this,
             object : OnBackPressedCallback(true) {

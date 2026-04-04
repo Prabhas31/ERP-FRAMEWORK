@@ -19,66 +19,54 @@ class LiveLocationService : Service() {
 
     private lateinit var fusedClient: FusedLocationProviderClient
     private lateinit var callback: LocationCallback
+    private lateinit var userId: String
 
     private val CHANNEL_ID = "live_location_channel"
-    private val USER_ID = "owner_001"
 
     override fun onCreate() {
         super.onCreate()
 
-        fusedClient =
-            LocationServices.getFusedLocationProviderClient(this)
+        userId = SecurePrefs.getUserId(this)
 
-        callback =
-            object : LocationCallback() {
+        fusedClient = LocationServices.getFusedLocationProviderClient(this)
 
-                override fun onLocationResult(result: LocationResult) {
+        callback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                val loc = result.lastLocation ?: return
 
-                    val loc = result.lastLocation ?: return
-
-                    FirebaseDatabase.getInstance()
-                        .getReference("users")
-                        .child(USER_ID)
-                        .child("live_location")
-                        .setValue(
-                            mapOf(
-                                "lat" to loc.latitude,
-                                "lng" to loc.longitude,
-                                "accuracy" to loc.accuracy,
-                                "timestamp" to System.currentTimeMillis()
-                            )
+                FirebaseDatabase.getInstance()
+                    .getReference("users")
+                    .child(userId)
+                    .child("live_location")
+                    .setValue(
+                        mapOf(
+                            "lat" to loc.latitude,
+                            "lng" to loc.longitude,
+                            "accuracy" to loc.accuracy,
+                            "timestamp" to System.currentTimeMillis()
                         )
-                }
+                    )
             }
+        }
     }
 
-    override fun onStartCommand(
-        intent: Intent?,
-        flags: Int,
-        startId: Int
-    ): Int {
-
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground(101, createNotification())
-
         startLocationUpdates()
-
         return START_STICKY
     }
 
     private fun startLocationUpdates() {
-
-        if (
-            ContextCompat.checkSelfPermission(
+        if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) return
 
-        val request =
-            LocationRequest.Builder(
-                Priority.PRIORITY_HIGH_ACCURACY,
-                5000
-            ).build()
+        val request = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            5000
+        ).build()
 
         fusedClient.requestLocationUpdates(
             request,
@@ -88,16 +76,12 @@ class LiveLocationService : Service() {
     }
 
     private fun createNotification(): Notification {
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-            val channel =
-                NotificationChannel(
-                    CHANNEL_ID,
-                    "Live Location Tracking",
-                    NotificationManager.IMPORTANCE_LOW
-                )
-
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Live Location Tracking",
+                NotificationManager.IMPORTANCE_LOW
+            )
             getSystemService(NotificationManager::class.java)
                 .createNotificationChannel(channel)
         }
@@ -111,9 +95,7 @@ class LiveLocationService : Service() {
     }
 
     override fun onDestroy() {
-
         fusedClient.removeLocationUpdates(callback)
-
         super.onDestroy()
     }
 

@@ -12,11 +12,13 @@ class ReinstallRecoveryVerifyActivity : AppCompatActivity() {
 
     private lateinit var recoveryInput: EditText
     private lateinit var verifyButton: Button
-
-    private val userId = "owner_001"
+    private lateinit var userId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        userId = SecurePrefs.getUserId(this)
+
         setContentView(R.layout.activity_reinstall_recovery_verify)
 
         recoveryInput = findViewById(R.id.etRecoveryPassword)
@@ -37,35 +39,25 @@ class ReinstallRecoveryVerifyActivity : AppCompatActivity() {
 
     private fun verifyRecoveryFromFirebase(input: String) {
 
-        val hash = HashUtils.sha256(input)
+        val hash = HashUtils.sha256(input.trim())
 
         FirebaseDatabase.getInstance()
             .getReference("users")
             .child(userId)
             .child("recovery")
-            .child("password_hash")
             .get()
             .addOnSuccessListener { snapshot ->
 
-                val storedHash = snapshot.getValue(String::class.java)
+                val storedHash = snapshot.child("password_hash")
+                    .getValue(String::class.java)
 
                 if (storedHash == null) {
-                    Toast.makeText(
-                        this,
-                        "No recovery password found. Setup required.",
-                        Toast.LENGTH_LONG
-                    ).show()
-
-                    startActivity(
-                        Intent(this, RecoverySetupActivity::class.java)
-                    )
-                    finish()
+                    Toast.makeText(this, "No password found", Toast.LENGTH_SHORT).show()
                     return@addOnSuccessListener
                 }
 
                 if (storedHash == hash) {
 
-                    // mark this install trusted
                     getSharedPreferences("install_state", MODE_PRIVATE)
                         .edit()
                         .putBoolean("trusted_install", true)
@@ -73,11 +65,7 @@ class ReinstallRecoveryVerifyActivity : AppCompatActivity() {
 
                     SecurePrefs.setRecoveryPasswordSet(this, true)
 
-                    Toast.makeText(
-                        this,
-                        "Recovery verified. Please set App Lock.",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(this, "Recovery SUCCESS", Toast.LENGTH_SHORT).show()
 
                     startActivity(
                         Intent(this, AppLockSetupActivity::class.java)
@@ -87,6 +75,9 @@ class ReinstallRecoveryVerifyActivity : AppCompatActivity() {
                 } else {
                     recoveryInput.error = "Incorrect recovery password"
                 }
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Firebase error", Toast.LENGTH_SHORT).show()
             }
     }
 }

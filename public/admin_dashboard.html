@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDH1HKKs4bCQicWRBPw271nfB5HXROWtwM&callback=initMap" async defer></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        body{margin:0;font-family:Arial}
+
+        /* LOGIN SCREEN */
+        #loginScreen{
+        position:fixed;
+        width:100%;
+        height:100%;
+        background:#0d0d0d;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        flex-direction:column;
+        color:white;
+        z-index:999;
+        }
+
+        input{
+        padding:12px;
+        font-size:16px;
+        border-radius:8px;
+        border:none;
+        margin:10px;
+        }
+
+        button{
+        padding:10px 20px;
+        border:none;
+        border-radius:8px;
+        background:#ff3b30;
+        color:white;
+        cursor:pointer;
+        }
+
+        .shake{
+        animation:shake 0.3s;
+        }
+        @keyframes shake{
+        0%{transform:translateX(0)}
+        25%{transform:translateX(-5px)}
+        50%{transform:translateX(5px)}
+        75%{transform:translateX(-5px)}
+        100%{transform:translateX(0)}
+        }
+
+        /* MAP */
+        #map{height:100vh;width:100%;display:none}
+
+        /* SIDEBAR */
+        #sidebar{
+        position:absolute;
+        left:0;
+        top:0;
+        width:260px;
+        height:100%;
+        background:#111;
+        color:white;
+        overflow:auto;
+        z-index:2;
+        padding:10px;
+        display:none;
+        }
+
+        .device-item{
+        padding:10px;
+        border-bottom:1px solid #333;
+        cursor:pointer;
+        }
+        .device-item:hover{background:#222}
+
+        /* FLOAT CARD */
+        #card{
+        position:absolute;
+        bottom:20px;
+        left:50%;
+        transform:translateX(-50%);
+        background:white;
+        padding:15px;
+        border-radius:12px;
+        box-shadow:0 5px 20px rgba(0,0,0,0.3);
+        display:none;
+        z-index:3;
+        }
+
+        /* NO DEVICE */
+        #noDevices{
+        display:none;
+        height:100vh;
+        background:black;
+        color:white;
+        justify-content:center;
+        align-items:center;
+        font-size:24px;
+        }
+
+        /* LOGOUT */
+        #logout{
+        position:absolute;
+        top:10px;
+        right:10px;
+        background:red;
+        color:white;
+        border:none;
+        padding:10px;
+        border-radius:8px;
+        cursor:pointer;
+        z-index:3;
+        display:none;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+    <h2>🔐 Admin Login</h2>
+    <input type="password" id="pass" placeholder="Enter password">
+    <button onclick="checkLogin()">Login</button>
+    <div id="error"></div>
+    <div id="timer"></div>
+</div>
+
+<div id="sidebar"></div>
+<button id="logout" onclick="logout()">Logout</button>
+
+<div id="map"></div>
+<div id="card"></div>
+
+<div id="noDevices">
+    🚫 No devices in stolen mode
+</div>
+
+<script>
+    const ADMIN_PASSWORD = "Prabhas@3105";
+
+    let attempts = 0;
+    let lockedUntil = 0;
+
+    function checkLogin(){
+
+    const now = Date.now();
+
+    if(now < lockedUntil){
+    startCountdown();
+    return;
+    }
+
+    const input = document.getElementById("pass");
+    const val = input.value;
+
+    if(val === ADMIN_PASSWORD){
+
+    sessionStorage.setItem("adminAuth","true");
+    startApp();
+
+    }else{
+
+    attempts++;
+    input.classList.add("shake");
+    setTimeout(()=>input.classList.remove("shake"),300);
+
+    document.getElementById("error").innerText = `Wrong password (${attempts}/5)`;
+
+    if(attempts >= 5){
+    lockedUntil = Date.now() + 60000;
+    startCountdown();
+    }
+    }
+    }
+
+    function startCountdown(){
+
+    const timer = document.getElementById("timer");
+
+    const interval = setInterval(()=>{
+
+    let remaining = Math.floor((lockedUntil - Date.now())/1000);
+
+    if(remaining <= 0){
+    clearInterval(interval);
+    attempts = 0;
+    timer.innerText = "";
+    return;
+    }
+
+    timer.innerText = `Locked: ${remaining}s`;
+
+    },1000);
+    }
+
+    function logout(){
+    sessionStorage.removeItem("adminAuth");
+    location.reload();
+    }
+
+    function startApp(){
+
+    document.getElementById("loginScreen").style.display="none";
+    document.getElementById("map").style.display="block";
+    document.getElementById("sidebar").style.display="block";
+    document.getElementById("logout").style.display="block";
+
+    initMap();
+    }
+
+    /* CHECK AUTH */
+    if(sessionStorage.getItem("adminAuth")==="true"){
+    startApp();
+    }
+
+    /* FIREBASE */
+    const firebaseConfig = {
+    databaseURL:"https://emergencyphonerecovery-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let map;
+    let markers={};
+
+    function initMap(){
+
+    map = new google.maps.Map(document.getElementById("map"),{
+    zoom:5,
+    center:{lat:20.5937,lng:78.9629}
+    });
+
+    loadDevices();
+    }
+
+    function loadDevices(){
+
+    db.ref("users").on("value",snap=>{
+
+    const users = snap.val() || {};
+
+    Object.values(markers).forEach(m=>m.setMap(null));
+    markers={};
+
+    let sidebarHTML="";
+    let activeCount=0;
+
+    Object.keys(users).forEach(userId=>{
+
+    const user = users[userId];
+
+    if(!user.share_sessions) return;
+
+    const active = Object.values(user.share_sessions||{})
+    .some(s=>s && s.active===true);
+
+    if(!active) return;
+
+    const loc = user.live_location;
+    if(!loc) return;
+
+    const lat = loc.lat ?? loc.latitude;
+    const lng = loc.lng ?? loc.longitude;
+
+    if(lat==null || lng==null) return;
+
+    activeCount++;
+
+    const pos={lat,lng};
+    const d = user.device_info || {};
+
+    const marker = new google.maps.Marker({
+    position:pos,
+    map:map
+    });
+
+    /* LABEL */
+    new google.maps.InfoWindow({
+    content:`<b>${d.display_name||"Device"}</b>`
+    }).open(map,marker);
+
+    /* CLICK CARD */
+    marker.addListener("click",()=>showCard(d));
+
+    sidebarHTML += `
+    <div class="device-item" onclick="focusDevice(${lat},${lng})">
+    📱 ${d.display_name||"Device"}
+    </div>
+    `;
+
+    markers[userId]=marker;
+    });
+
+    /* SIDEBAR */
+    document.getElementById("sidebar").innerHTML=sidebarHTML;
+
+    /* NO DEVICE */
+    if(activeCount===0){
+    document.getElementById("map").style.display="none";
+    document.getElementById("sidebar").style.display="none";
+    document.getElementById("noDevices").style.display="flex";
+    }else{
+    document.getElementById("map").style.display="block";
+    document.getElementById("sidebar").style.display="block";
+    document.getElementById("noDevices").style.display="none";
+    }
+
+    });
+    }
+
+    function showCard(d){
+    const card=document.getElementById("card");
+    card.innerHTML=`
+    <b>${d.display_name||"Device"}</b><br>
+    Owner: ${d.owner_name||"-"}<br>
+    Model: ${d.model||"-"}
+    `;
+    card.style.display="block";
+    }
+
+    function focusDevice(lat,lng){
+    map.setCenter({lat,lng});
+    map.setZoom(16);
+    }
+</script>
+
+</body>
+</html>

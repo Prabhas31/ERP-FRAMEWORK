@@ -7,14 +7,16 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.database.FirebaseDatabase
-import java.security.MessageDigest
 
 class RecoverySetupActivity : AppCompatActivity() {
 
-    private val userId = "owner_001"
+    private lateinit var userId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        userId = SecurePrefs.initUserId(this)
+
         setContentView(R.layout.activity_recovery_setup)
 
         val etPassword = findViewById<EditText>(R.id.etPassword)
@@ -22,8 +24,9 @@ class RecoverySetupActivity : AppCompatActivity() {
         val btnSave = findViewById<Button>(R.id.btnSavePassword)
 
         btnSave.setOnClickListener {
-            val p1 = etPassword.text.toString()
-            val p2 = etConfirm.text.toString()
+
+            val p1 = etPassword.text.toString().trim()
+            val p2 = etConfirm.text.toString().trim()
 
             if (p1.length < 6) {
                 toast("Password must be at least 6 characters")
@@ -41,7 +44,7 @@ class RecoverySetupActivity : AppCompatActivity() {
 
     private fun savePassword(password: String) {
 
-        val hash = sha256(password)
+        val hash = HashUtils.sha256(password.trim())
 
         FirebaseDatabase.getInstance()
             .getReference("users")
@@ -55,15 +58,12 @@ class RecoverySetupActivity : AppCompatActivity() {
             )
             .addOnSuccessListener {
 
-                // ✅ mark recovery locally
                 SecurePrefs.setRecoveryPasswordSet(this, true)
 
-                // ✅ go directly to Trusted Email setup
+                Toast.makeText(this, "Password Saved", Toast.LENGTH_SHORT).show()
+
                 startActivity(
-                    Intent(
-                        this,
-                        TrustedEmailSetupActivity::class.java
-                    )
+                    Intent(this, TrustedEmailSetupActivity::class.java)
                 )
 
                 finish()
@@ -71,12 +71,6 @@ class RecoverySetupActivity : AppCompatActivity() {
             .addOnFailureListener {
                 toast("Failed to save password")
             }
-    }
-
-    private fun sha256(input: String): String {
-        val md = MessageDigest.getInstance("SHA-256")
-        return md.digest(input.toByteArray())
-            .joinToString("") { "%02x".format(it) }
     }
 
     private fun toast(msg: String) {

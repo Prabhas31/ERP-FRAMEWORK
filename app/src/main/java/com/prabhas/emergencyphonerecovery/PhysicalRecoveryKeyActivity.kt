@@ -9,10 +9,14 @@ import java.util.UUID
 
 class PhysicalRecoveryKeyActivity : AppCompatActivity() {
 
-    private val userId = "owner_001"
+    private lateinit var userId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ✅ FIX: use correct userId
+        userId = SecurePrefs.getUserId(this)
+
         setContentView(R.layout.activity_physical_recovery_key)
 
         val tvKey = findViewById<TextView>(R.id.tvPhysicalKey)
@@ -30,8 +34,11 @@ class PhysicalRecoveryKeyActivity : AppCompatActivity() {
             if (existingKey != null) {
                 tvKey.text = existingKey
             } else {
+
                 val newKey = generateKey()
+
                 keyRef.setValue(newKey)
+
                 tvKey.text = newKey
 
                 Toast.makeText(

@@ -9,6 +9,7 @@ object SecurePrefs {
     private const val PREF_NAME = "secure_prefs"
 
     // ---------- KEYS ----------
+    private const val KEY_USER_ID = "user_id"
     private const val KEY_APP_LOCK_SET = "app_lock_set"
     private const val KEY_APP_LOCK_HASH = "app_lock_password_hash"
     private const val KEY_RECOVERY_SET = "recovery_password_set"
@@ -16,6 +17,26 @@ object SecurePrefs {
 
     private fun prefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    }
+
+    // ---------- USER ID (FINAL FIX) ----------
+    fun initUserId(context: Context): String {
+
+        val prefs = prefs(context)
+
+        val existing = prefs.getString(KEY_USER_ID, null)
+        if (existing != null) return existing
+
+        val newUserId = "user_" + System.currentTimeMillis()
+
+        prefs.edit().putString(KEY_USER_ID, newUserId).commit()
+
+        return newUserId
+    }
+
+    fun getUserId(context: Context): String {
+        return prefs(context).getString(KEY_USER_ID, null)
+            ?: throw IllegalStateException("UserId not initialized")
     }
 
     // ---------- APP LOCK ----------

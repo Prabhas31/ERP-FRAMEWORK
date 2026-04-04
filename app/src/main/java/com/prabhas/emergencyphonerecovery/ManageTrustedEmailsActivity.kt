@@ -10,10 +10,13 @@ import com.google.firebase.database.FirebaseDatabase
 
 class ManageTrustedEmailsActivity : AppCompatActivity() {
 
-    private val userId = "owner_001"
+    private lateinit var userId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        userId = SecurePrefs.getUserId(this)
+
         setContentView(R.layout.activity_trusted_email_setup)
 
         val et1 = findViewById<EditText>(R.id.etEmail1)
@@ -24,15 +27,14 @@ class ManageTrustedEmailsActivity : AppCompatActivity() {
         val userRef = FirebaseDatabase.getInstance()
             .getReference("users")
             .child(userId)
+            .child("trusted_emails")
 
         // 🔹 Load existing emails
-        userRef.child("trusted_emails")
-            .get()
-            .addOnSuccessListener { snap ->
-                et1.setText(snap.child("email_1").getValue(String::class.java) ?: "")
-                et2.setText(snap.child("email_2").getValue(String::class.java) ?: "")
-                et3.setText(snap.child("email_3").getValue(String::class.java) ?: "")
-            }
+        userRef.get().addOnSuccessListener { snap ->
+            et1.setText(snap.child("email_1").getValue(String::class.java) ?: "")
+            et2.setText(snap.child("email_2").getValue(String::class.java) ?: "")
+            et3.setText(snap.child("email_3").getValue(String::class.java) ?: "")
+        }
 
         btnSave.setOnClickListener {
 
@@ -45,34 +47,42 @@ class ManageTrustedEmailsActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // ✅ Mandatory email
-            userRef.child("trusted_emails/email_1").setValue(e1)
+            println("🔥 UPDATING EMAILS FOR USER: $userId")
 
-            // ✅ Optional email 2
+            val updates = mutableMapOf<String, Any>(
+                "email_1" to e1,
+                "trusted_emails_set" to true
+            )
+
+            // ✅ Only add if exists
             if (e2.isNotEmpty()) {
-                userRef.child("trusted_emails/email_2").setValue(e2)
-            } else {
-                userRef.child("trusted_emails/email_2").removeValue()
+                updates["email_2"] = e2
             }
 
-            // ✅ Optional email 3
             if (e3.isNotEmpty()) {
-                userRef.child("trusted_emails/email_3").setValue(e3)
-            } else {
-                userRef.child("trusted_emails/email_3").removeValue()
+                updates["email_3"] = e3
             }
 
-            // ✅ FIX: mark setup done at the CORRECT path
-            userRef.child("trusted_emails")
-                .child("trusted_emails_set")
-                .setValue(true)
+            userRef.updateChildren(updates)
                 .addOnSuccessListener {
+
+                    // ✅ Handle removals separately
+                    if (e2.isEmpty()) {
+                        userRef.child("email_2").removeValue()
+                    }
+                    if (e3.isEmpty()) {
+                        userRef.child("email_3").removeValue()
+                    }
+
                     toast("Trusted emails updated")
                     finish()
                 }
+                .addOnFailureListener { e ->
+                    toast("Failed: ${e.message}")
+                    e.printStackTrace()
+                }
         }
 
-        // 🔙 Back → Dashboard
         onBackPressedDispatcher.addCallback(
             this,
             object : OnBackPressedCallback(true) {
