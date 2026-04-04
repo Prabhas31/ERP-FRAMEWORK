@@ -104,41 +104,51 @@ Step 4: Run Application
 Connect Android device or use emulator
 Click ▶️ Run
 ```
-🔮 Future Enhancements
-🤖 AI-based theft detection system
-📡 Advanced real-time GPS tracking
-☁️ Cloud dashboard for remote device control
-🔔 Real-time alerts and notifications
-🔐 Biometric authentication integration
-📊 Analytics for device activity
+## 🔮 Future Enhancements
 
-🧪 Use Cases
-Recover stolen mobile devices
-Secure personal data remotely
-Track lost phones in real-time
-Prevent unauthorized access
+- 🤖 AI-based theft detection system  
+- 📡 Advanced real-time GPS tracking  
+- ☁️ Cloud dashboard for remote device control  
+- 🔔 Real-time alerts and notifications  
+- 🔐 Biometric authentication integration  
+- 📊 Analytics for device activity  
 
-👨‍💻 Author
+---
 
-Prabhas Anumula
+## 🧪 Use Cases
 
-🎓 B.Tech CSE (AI/ML), MGIT (2027)
-💻 Android Developer | Mobile Security Enthusiast
-📧 Email: prabhas.anumula@gmail.com
-🔗 LinkedIn: https://www.linkedin.com/in/prabhas-anumula-239a4137a/
+- Recover stolen mobile devices  
+- Secure personal data remotely  
+- Track lost phones in real-time  
+- Prevent unauthorized access  
 
+---
 
-📌 Note
+## 👨‍💻 Author
+
+**Prabhas Anumula**
+
+- 🎓 B.Tech CSE (AI/ML), MGIT (2027)  
+- 💻 Android Developer | Mobile Security Enthusiast  
+- 📧 Email: prabhas.anumula@gmail.com  
+- 🔗 LinkedIn: https://www.linkedin.com/in/prabhas-anumula-239a4137a/  
+
+---
+
+## 📌 Note
 
 This project is developed for educational and research purposes. It demonstrates how database-driven systems can be used to build secure mobile recovery solutions.
 
-⭐ Support
+---
+
+## ⭐ Support
 
 If you like this project, consider giving it a ⭐ on GitHub!
 
-🚀 Project Status
+---
 
-🟢 Version 1 Completed
-🔄 Continuous Improvements in Progress
+## 🚀 Project Status
 
+- 🟢 Version 1 Completed  
+- 🔄 Continuous Improvements in Progress  
 
