@@ -69,3 +69,24 @@ This project solves these issues by implementing a secure and structured recover
 ---
 
 ## 📂 Project Structure
+EmergencyPhoneRecovery/
+│── app/
+│ ├── src/
+│ │ ├── main/
+│ │ │ ├── java/com/prabhas/emergencyphonerecovery/
+│ │ │ ├── res/
+│ │ │ └── AndroidManifest.xml
+│── functions/
+│── public/
+│── gradle/
+│── build.gradle.kts
+│── settings.gradle.kts
+
+
+---
+
+## ⚙️ Installation & Setup
+
+### Step 1: Clone the Repository
+```bash
+git clone https://github.com/Prabhas31/ERP-FRAMEWORK.git
