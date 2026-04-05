@@ -6,7 +6,8 @@
 
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDH1HKKs4bCQicWRBPw271nfB5HXROWtwM&callback=initMap" async defer></script>
+    <!-- Google Maps -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDH1HKKs4bCQicWRBPw271nfB5HXROWtwM"></script>
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -14,40 +15,17 @@
     <style>
         body{margin:0;font-family:Arial}
 
-        /* LOGIN SCREEN */
         #loginScreen{
-        position:fixed;
-        width:100%;
-        height:100%;
-        background:#0d0d0d;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        flex-direction:column;
-        color:white;
-        z-index:999;
+        position:fixed;width:100%;height:100%;
+        background:#0d0d0d;display:flex;
+        justify-content:center;align-items:center;
+        flex-direction:column;color:white;z-index:999;
         }
 
-        input{
-        padding:12px;
-        font-size:16px;
-        border-radius:8px;
-        border:none;
-        margin:10px;
-        }
+        input{padding:12px;font-size:16px;border-radius:8px;border:none;margin:10px;}
+        button{padding:10px 20px;border:none;border-radius:8px;background:#ff3b30;color:white;cursor:pointer;}
 
-        button{
-        padding:10px 20px;
-        border:none;
-        border-radius:8px;
-        background:#ff3b30;
-        color:white;
-        cursor:pointer;
-        }
-
-        .shake{
-        animation:shake 0.3s;
-        }
+        .shake{animation:shake 0.3s;}
         @keyframes shake{
         0%{transform:translateX(0)}
         25%{transform:translateX(-5px)}
@@ -56,76 +34,48 @@
         100%{transform:translateX(0)}
         }
 
-        /* MAP */
-        #map{height:100vh;width:100%;display:none}
+        #timer{margin-top:10px;color:#ff3b30;}
 
-        /* SIDEBAR */
+        #map{height:100vh;width:100%;display:none;}
+
         #sidebar{
-        position:absolute;
-        left:0;
-        top:0;
-        width:260px;
-        height:100%;
-        background:#111;
-        color:white;
-        overflow:auto;
-        z-index:2;
-        padding:10px;
-        display:none;
+        position:absolute;left:0;top:0;width:260px;height:100%;
+        background:#111;color:white;overflow:auto;z-index:2;padding:10px;display:none;
         }
 
         .device-item{
-        padding:10px;
-        border-bottom:1px solid #333;
-        cursor:pointer;
+        padding:10px;border-bottom:1px solid #333;cursor:pointer;font-size:14px;
         }
-        .device-item:hover{background:#222}
+        .device-item:hover{background:#222;}
 
-        /* FLOAT CARD */
-        #card{
-        position:absolute;
-        bottom:20px;
-        left:50%;
-        transform:translateX(-50%);
-        background:white;
-        padding:15px;
-        border-radius:12px;
-        box-shadow:0 5px 20px rgba(0,0,0,0.3);
-        display:none;
-        z-index:3;
+        .coords{
+        font-size:12px;color:#aaa;margin-top:4px;
         }
 
-        /* NO DEVICE */
         #noDevices{
         display:none;
-        height:100vh;
+        position:fixed;
+        width:100%;
+        height:100%;
         background:black;
         color:white;
         justify-content:center;
         align-items:center;
         font-size:24px;
+        z-index:1000;
         }
 
-        /* LOGOUT */
         #logout{
-        position:absolute;
-        top:10px;
-        right:10px;
-        background:red;
-        color:white;
-        border:none;
-        padding:10px;
-        border-radius:8px;
-        cursor:pointer;
-        z-index:3;
-        display:none;
+        position:absolute;top:10px;right:10px;
+        background:red;color:white;
+        border:none;padding:10px;border-radius:8px;
+        cursor:pointer;z-index:3;display:none;
         }
     </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
 <div id="loginScreen">
     <h2>🔐 Admin Login</h2>
     <input type="password" id="pass" placeholder="Enter password">
@@ -136,13 +86,9 @@
 
 <div id="sidebar"></div>
 <button id="logout" onclick="logout()">Logout</button>
-
 <div id="map"></div>
-<div id="card"></div>
 
-<div id="noDevices">
-    🚫 No devices in stolen mode
-</div>
+<div id="noDevices">🚫 No devices in stolen mode</div>
 
 <script>
     const ADMIN_PASSWORD = "Prabhas@3105";
@@ -151,189 +97,199 @@
     let lockedUntil = 0;
 
     function checkLogin(){
+        const now = Date.now();
 
-    const now = Date.now();
+        if(now < lockedUntil){
+            startCountdown();
+            return;
+        }
 
-    if(now < lockedUntil){
-    startCountdown();
-    return;
-    }
+        const input = document.getElementById("pass");
 
-    const input = document.getElementById("pass");
-    const val = input.value;
+        if(input.value === ADMIN_PASSWORD){
+            sessionStorage.setItem("adminAuth","true");
+            startApp();
+        }else{
+            attempts++;
 
-    if(val === ADMIN_PASSWORD){
+            input.classList.add("shake");
+            setTimeout(()=>input.classList.remove("shake"),300);
 
-    sessionStorage.setItem("adminAuth","true");
-    startApp();
+            document.getElementById("error").innerText = `Wrong password (${attempts}/5)`;
 
-    }else{
-
-    attempts++;
-    input.classList.add("shake");
-    setTimeout(()=>input.classList.remove("shake"),300);
-
-    document.getElementById("error").innerText = `Wrong password (${attempts}/5)`;
-
-    if(attempts >= 5){
-    lockedUntil = Date.now() + 60000;
-    startCountdown();
-    }
-    }
+            if(attempts >= 5){
+                lockedUntil = Date.now() + 60000;
+                startCountdown();
+            }
+        }
     }
 
     function startCountdown(){
+        const timer = document.getElementById("timer");
 
-    const timer = document.getElementById("timer");
+        const interval = setInterval(()=>{
+            let remaining = Math.floor((lockedUntil - Date.now())/1000);
 
-    const interval = setInterval(()=>{
+            if(remaining <= 0){
+                clearInterval(interval);
+                attempts = 0;
+                timer.innerText = "";
+                return;
+            }
 
-    let remaining = Math.floor((lockedUntil - Date.now())/1000);
-
-    if(remaining <= 0){
-    clearInterval(interval);
-    attempts = 0;
-    timer.innerText = "";
-    return;
-    }
-
-    timer.innerText = `Locked: ${remaining}s`;
-
-    },1000);
+            timer.innerText = `Locked: ${remaining}s`;
+        },1000);
     }
 
     function logout(){
-    sessionStorage.removeItem("adminAuth");
-    location.reload();
+        sessionStorage.removeItem("adminAuth");
+        location.reload();
     }
+
+    let map;
+    let markers = {};
+    let infoWindow;
+    let mapInitialized = false;
 
     function startApp(){
+        document.getElementById("loginScreen").style.display="none";
+        document.getElementById("map").style.display="block";
+        document.getElementById("sidebar").style.display="block";
+        document.getElementById("logout").style.display="block";
 
-    document.getElementById("loginScreen").style.display="none";
-    document.getElementById("map").style.display="block";
-    document.getElementById("sidebar").style.display="block";
-    document.getElementById("logout").style.display="block";
+        if(mapInitialized) return;
 
-    initMap();
+        if(typeof google !== "undefined"){
+            mapInitialized = true;
+            initMap();
+        }else{
+            setTimeout(startApp, 300);
+        }
     }
 
-    /* CHECK AUTH */
     if(sessionStorage.getItem("adminAuth")==="true"){
-    startApp();
+        startApp();
     }
 
-    /* FIREBASE */
     const firebaseConfig = {
-    databaseURL:"https://emergencyphonerecovery-default-rtdb.asia-southeast1.firebasedatabase.app"
+        databaseURL:"https://emergencyphonerecovery-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let map;
-    let markers={};
-
     function initMap(){
+        map = new google.maps.Map(document.getElementById("map"),{
+            zoom:5,
+            center:{lat:20.5937,lng:78.9629}
+        });
 
-    map = new google.maps.Map(document.getElementById("map"),{
-    zoom:5,
-    center:{lat:20.5937,lng:78.9629}
-    });
+        infoWindow = new google.maps.InfoWindow();
 
-    loadDevices();
+        google.maps.event.addListenerOnce(map, 'tilesloaded', function(){
+            console.log("Map ready");
+            loadDevices();
+        });
     }
 
     function loadDevices(){
 
-    db.ref("users").on("value",snap=>{
+        if(!map){
+            console.log("Map not ready yet");
+            return;
+        }
 
-    const users = snap.val() || {};
+        if(sessionStorage.getItem("adminAuth") !== "true") return;
 
-    Object.values(markers).forEach(m=>m.setMap(null));
-    markers={};
+        db.ref("users").on("value",snap=>{
 
-    let sidebarHTML="";
-    let activeCount=0;
+            const users = snap.val();
 
-    Object.keys(users).forEach(userId=>{
+            if(!users){
+                console.log("Waiting for Firebase data...");
+                return;
+            }
 
-    const user = users[userId];
+            // 🔥 FIX: clear old markers
+            Object.values(markers).forEach(m => m.setMap(null));
+            markers = {};
 
-    if(!user.share_sessions) return;
+            let sidebarHTML="";
+            let activeCount = 0;
 
-    const active = Object.values(user.share_sessions||{})
-    .some(s=>s && s.active===true);
+            Object.keys(users).forEach(userId=>{
 
-    if(!active) return;
+                const user = users[userId];
+                if(!user || !user.share_sessions) return;
 
-    const loc = user.live_location;
-    if(!loc) return;
+                const active = Object.values(user.share_sessions||{})
+                .some(s=>s && s.active===true);
 
-    const lat = loc.lat ?? loc.latitude;
-    const lng = loc.lng ?? loc.longitude;
+                if(!active) return;
 
-    if(lat==null || lng==null) return;
+                const loc = user.live_location;
+                if(!loc) return;
 
-    activeCount++;
+                const lat = loc.lat ?? loc.latitude;
+                const lng = loc.lng ?? loc.longitude;
 
-    const pos={lat,lng};
-    const d = user.device_info || {};
+                if(lat==null || lng==null) return;
 
-    const marker = new google.maps.Marker({
-    position:pos,
-    map:map
-    });
+                activeCount++;
 
-    /* LABEL */
-    new google.maps.InfoWindow({
-    content:`<b>${d.display_name||"Device"}</b>`
-    }).open(map,marker);
+                const pos={lat,lng};
+                const d = user.device_info || {};
 
-    /* CLICK CARD */
-    marker.addListener("click",()=>showCard(d));
+                const phoneIcon = {
+                    url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40">
+                    <rect x="10" y="5" width="20" height="30" rx="5" fill="#007bff"/>
+                    <circle cx="20" cy="30" r="2" fill="white"/>
+                    </svg>`),
+                    scaledSize: new google.maps.Size(40,40)
+                };
 
-    sidebarHTML += `
-    <div class="device-item" onclick="focusDevice(${lat},${lng})">
-    📱 ${d.display_name||"Device"}
-    </div>
-    `;
+                const marker = new google.maps.Marker({
+                    position:pos,
+                    map:map,
+                    icon:phoneIcon
+                });
 
-    markers[userId]=marker;
-    });
+                marker.addListener("click",()=>{
+                    infoWindow.setContent(`<b>${d.display_name||"Device"}</b>`);
+                    infoWindow.open(map,marker);
+                });
 
-    /* SIDEBAR */
-    document.getElementById("sidebar").innerHTML=sidebarHTML;
+                markers[userId]=marker;
 
-    /* NO DEVICE */
-    if(activeCount===0){
-    document.getElementById("map").style.display="none";
-    document.getElementById("sidebar").style.display="none";
-    document.getElementById("noDevices").style.display="flex";
-    }else{
-    document.getElementById("map").style.display="block";
-    document.getElementById("sidebar").style.display="block";
-    document.getElementById("noDevices").style.display="none";
-    }
+                sidebarHTML += `
+                <div class="device-item" onclick="focusDevice(${lat},${lng})">
+                📱 ${d.display_name||"Device"}
+                <div class="coords">Lat: ${lat.toFixed(5)} | Lng: ${lng.toFixed(5)}</div>
+                </div>
+                `;
+            });
 
-    });
-    }
+            if(activeCount === 0){
+                document.getElementById("map").style.display="none";
+                document.getElementById("sidebar").style.display="none";
+                document.getElementById("noDevices").style.display="flex";
+            }else{
+                document.getElementById("map").style.display="block";
+                document.getElementById("sidebar").style.display="block";
+                document.getElementById("noDevices").style.display="none";
+            }
 
-    function showCard(d){
-    const card=document.getElementById("card");
-    card.innerHTML=`
-    <b>${d.display_name||"Device"}</b><br>
-    Owner: ${d.owner_name||"-"}<br>
-    Model: ${d.model||"-"}
-    `;
-    card.style.display="block";
+            document.getElementById("sidebar").innerHTML=sidebarHTML;
+
+        });
     }
 
     function focusDevice(lat,lng){
-    map.setCenter({lat,lng});
-    map.setZoom(16);
+        map.setCenter({lat,lng});
+        map.setZoom(16);
     }
 </script>
 
 </body>
 </html>
-// git tes
