@@ -1,5 +1,11 @@
 # 📱 Emergency Phone Recovery Framework (ERP Framework)
 
+## 📄 Documentation
+
+The complete project report is available in this repository:
+
+📘 ANUMULA PRABHAS (23261A6602) IOMP DOCUMENTATION.pdf
+
 ## 🔥 Project Overview
 The Emergency Phone Recovery Framework (ERP Framework) is an Android-based mobile security system designed to help users recover lost or stolen smartphones. It provides a secure, database-driven approach to device tracking, authentication, and recovery.
 
